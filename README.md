@@ -61,3 +61,61 @@ Before taking a single step, performs **Breadth-First Search** over the state sp
 | Goal-Based | ~2.9 | Yes |
 
 All three solve every starting state in the 3-room world. The Goal-Based agent edges out the lowest average because BFS guarantees the globally shortest path.
+
+# The contents
+Simple Reflex Agent
+
+  Technology: A hardcoded if/else rule table
+
+  if status == DIRTY:
+      return "Clean"
+  if pos == 0:
+      return "Right"
+  if pos == 2:
+      return "Left"
+  Just a lookup — current percept in, action out. No state, no planning.
+
+  ---
+  Model-Based Agent
+
+  Technology: A manually maintained state array
+
+  self.model[pos] = status      # update internal map from percept
+  self.visited[pos] = True
+  # then navigate toward nearest known-dirty room
+  Two plain Python lists (model[] and visited[]) act as the agent's memory. Decision is a min() call to find the nearest dirty room.
+
+  ---
+  Goal-Based Agent
+
+  Technology: Breadth-First Search (BFS)
+
+  queue = deque([(start, [])])
+  # expand states until all rooms are CLEAN
+  Uses Python's built-in collections.deque to do BFS over the state space (agent_position, rooms_tuple). Finds the shortest possible
+  action sequence before taking a single step. No heuristics — pure uninformed search.
+
+  ---
+  Visualisation
+
+  Technology: Matplotlib
+
+  - matplotlib.patches — draws the room rectangles and agent circles
+  - matplotlib.widgets.Button — the interactive buttons
+  - fig.canvas.new_timer() — drives the frame-by-frame animation
+
+  ---
+  Summary table:
+
+  ┌───────────────┬─────────────────────────┬─────────────────────────┐
+  │     Agent     │     Core technique      │       Python tool       │
+  ├───────────────┼─────────────────────────┼─────────────────────────┤
+  │ Simple Reflex │ Condition-action rules  │ if/else                 │
+  ├───────────────┼─────────────────────────┼─────────────────────────┤
+  │ Model-Based   │ Internal state tracking │ Plain lists             │
+  ├───────────────┼─────────────────────────┼─────────────────────────┤
+  │ Goal-Based    │ Optimal path search     │ collections.deque (BFS) │
+  ├───────────────┼─────────────────────────┼─────────────────────────┤
+  │ UI            │ Animation & widgets     │ matplotlib              │
+  └───────────────┴─────────────────────────┴─────────────────────────┘
+
