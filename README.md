@@ -44,13 +44,67 @@ python vacuum_world.py
 ## How It Works
 
 ### Simple Reflex Agent
-Acts solely on the current percept `(position, room_status)`. No memory of other rooms. Uses a wall-bounce heuristic when the current room is clean.
+
+**Technology: A hardcoded if/else rule table**
+
+```python
+if status == DIRTY:
+    return "Clean"
+if pos == 0:
+    return "Right"
+if pos == 2:
+    return "Left"
+```
+
+Just a lookup — current percept in, action out. No state, no planning.
+
+---
 
 ### Model-Based Agent
-Maintains a `model[]` array updated from each percept. Navigates toward the nearest room its internal model believes to be dirty; explores unvisited rooms if none are known dirty.
+
+**Technology: A manually maintained state array**
+
+```python
+self.model[pos] = status      # update internal map from percept
+self.visited[pos] = True
+# then navigate toward nearest known-dirty room
+```
+
+Two plain Python lists (`model[]` and `visited[]`) act as the agent's memory. Decision is a `min()` call to find the nearest dirty room.
+
+---
 
 ### Goal-Based Agent
-Before taking a single step, performs **Breadth-First Search** over the state space `(agent_position, rooms_tuple)` to find the shortest possible action sequence. Executes the plan blindly — always optimal.
+
+**Technology: Breadth-First Search (BFS)**
+
+```python
+queue = deque([(start, [])])
+# expand states until all rooms are CLEAN
+```
+
+Uses Python's built-in `collections.deque` to do BFS over the state space `(agent_position, rooms_tuple)`. Finds the shortest possible action sequence before taking a single step. No heuristics — pure uninformed search.
+
+---
+
+### Visualisation
+
+**Technology: Matplotlib**
+
+- `matplotlib.patches` — draws the room rectangles and agent circles
+- `matplotlib.widgets.Button` — the interactive buttons
+- `fig.canvas.new_timer()` — drives the frame-by-frame animation
+
+---
+
+### Summary
+
+| Agent | Core technique | Python tool |
+|---|---|---|
+| Simple Reflex | Condition-action rules | `if/else` |
+| Model-Based | Internal state tracking | Plain lists |
+| Goal-Based | Optimal path search | `collections.deque` (BFS) |
+| UI | Animation & widgets | `matplotlib` |
 
 ## Results (averaged over 200 random starting states)
 
