@@ -116,3 +116,53 @@ Uses Python's built-in `collections.deque` to do BFS over the state space `(agen
 
 All three solve every starting state in the 3-room world. The Goal-Based agent edges out the lowest average because BFS guarantees the globally shortest path.
 
+## High-Level Implementation
+
+### 1. Environment (`Env` class)
+
+A simple object holding an array of 3 room states (`CLEAN`/`DIRTY`) and the agent's current position. It has one method — `act(action)` — that mutates state based on the action taken. Nothing intelligent lives here; it's just the world.
+
+---
+
+### 2. The Three Agents
+
+Each agent has a `run(states, pos)` method that returns the full history of states and list of actions taken.
+
+| Agent | Decision logic |
+|---|---|
+| **Simple Reflex** | Looks only at the current room. If dirty → clean. If clean → bounce off walls (reverse at A or C, otherwise continue direction). No memory. |
+| **Model-Based** | Keeps an internal `model[]` array. Updates it each step from what it currently sees. Navigates toward the nearest room its model believes is dirty; if none, explores unvisited rooms. |
+| **Goal-Based** | Runs BFS over the full state space `(position, rooms_tuple)` before moving a single step, finds the shortest action sequence to reach all-clean, then executes it blindly. |
+
+---
+
+### 3. The Animated UI
+
+```
+plt.figure
+├── 3 agent_axes          ← one panel per agent (redrawn each frame)
+├── stats_ax              ← static table + bar chart
+└── 5 Button widgets      ← Start Reflex / Start Model / Start Goal
+                             Start All / Run 50 Iterations
+```
+
+Two timers drive everything:
+- **Normal timer (850 ms)** — advances the frame counter for whichever agents have `play=True`, redraws their panel
+- **Batch timer (100 ms)** — when "Run 50" is clicked, cycles through all 50 pre-computed trials rapidly, drawing one frame per tick
+
+All mutable state lives in a single `st` dict (histories, current frames, play flags) and a `batch` dict (trial list, current trial/frame index). The buttons just flip flags in these dicts — the timers do the actual rendering.
+
+---
+
+### 4. "Run 50 Iterations" Flow
+
+```
+Button click
+  → compute all 50 trials instantly (pure Python loop, no drawing)
+  → recalculate stats → redraw stats panel
+  → dump trials into batch dict
+  → set batch["running"] = True
+  → batch timer fires every 100ms, stepping through each trial's frames
+  → when all 50 done, restore normal title
+```
+
